@@ -24,6 +24,11 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
         name: 'storage'
         properties: {
           addressPrefix: storageSubnetPrefix
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Storage'
+            }
+          ]
         }
       }
     ]
