@@ -20,8 +20,8 @@ param adminUsername string = 'azureuser'
 param adminPassword string
 
 // --- Storage Account parameters ---
-param storage1Name string = 'storastudent1'
-param storage2Name string = 'storastudent2'
+param storage1Name string = 'storastudent1hassan786'
+param storage2Name string = 'storastudent2hassan786'
 
 // Deploy VNET 1
 module vnet1Module 'modules/vnet.bicep' = {
