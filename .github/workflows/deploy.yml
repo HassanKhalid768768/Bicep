@@ -1,0 +1,31 @@
+name: Deploy Bicep Template to Azure
+
+on:
+  push:
+    branches:
+      - main  # or your preferred branch
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy Bicep Template
+      uses: azure/arm-deploy@v1
+      with:
+        scope: subscription
+        subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+        region: eastus
+        template: ./main.bicep
