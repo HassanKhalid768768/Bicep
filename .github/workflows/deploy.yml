@@ -25,10 +25,10 @@ jobs:
     - name: Deploy Bicep Template
       uses: azure/arm-deploy@v1
       with:
-        scope: resourceGroup  # Change scope to resourceGroup
+        scope: resourcegroup           # valid value in lowercase
         subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-        resourceGroupName: '<your-resource-group-name>'  # Ensure this is set correctly
+        resourceGroupName: '<your-resource-group-name>'  # replace with your resource group
         region: eastus
         template: ./main.bicep
         parameters: |
-          adminPassword=${{ secrets.ADMIN_PASSWORD }}  # Ensure this is set if needed
+          adminPassword=${{ secrets.ADMIN_PASSWORD }}
