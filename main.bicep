@@ -1,4 +1,3 @@
-// main.bicep
 param location string = resourceGroup().location
 
 // --- VNET 1 parameters ---
@@ -48,14 +47,16 @@ module vnet2Module 'modules/vnet.bicep' = {
   }
 }
 
-// Peer the VNETs
+// Peer the VNETs (uses existing VNets in the module, so we only pass names)
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
+  dependsOn: [
+    vnet1Module
+    vnet2Module
+  ]
   params: {
     vnet1Name: vnet1Name
-    vnet1Id: vnet1Module.outputs.vnetId
     vnet2Name: vnet2Name
-    vnet2Id: vnet2Module.outputs.vnetId
   }
 }
 
