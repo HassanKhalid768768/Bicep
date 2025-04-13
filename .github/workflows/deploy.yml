@@ -3,7 +3,7 @@ name: Deploy Bicep Template to Azure
 on:
   push:
     branches:
-      - main  # or your preferred branch
+      - main  # or your preferred  branch
 
 permissions:
   id-token: write
