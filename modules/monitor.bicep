@@ -1,3 +1,5 @@
+// Attaches diagnostic settings to a resource, sending logs and metrics to a Log Analytics workspace
+
 param resourceId string
 param logAnalyticsWorkspaceId string
 param diagnosticName string = 'diag-${uniqueString(resourceId)}'

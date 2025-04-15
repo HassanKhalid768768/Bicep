@@ -1,3 +1,5 @@
+// Establishes two-way peering between two existing VNets
+
 param vnet1Name string
 param vnet2Name string
 

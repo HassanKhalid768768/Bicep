@@ -1,18 +1,21 @@
 param location string = resourceGroup().location
 
 // --- VNET 1 parameters ---
+// Defines name and subnet address ranges for the first virtual network
 param vnet1Name string = 'vnet-student-1'
 param vnet1AddressPrefix string = '10.0.0.0/16'
 param vnet1InfraPrefix string = '10.0.1.0/24'
 param vnet1StoragePrefix string = '10.0.2.0/24'
 
 // --- VNET 2 parameters ---
+// Defines name and subnet address ranges for the second virtual network
 param vnet2Name string = 'vnet-student-2'
 param vnet2AddressPrefix string = '10.1.0.0/16'
 param vnet2InfraPrefix string = '10.1.1.0/24'
 param vnet2StoragePrefix string = '10.1.2.0/24'
 
 // --- VM parameters ---
+// Defines the virtual machine names and admin credentials
 param vm1Name string = 'vm-student-1'
 param vm2Name string = 'vm-student-2'
 param adminUsername string = 'azureuser'
@@ -20,10 +23,12 @@ param adminUsername string = 'azureuser'
 param adminPassword string
 
 // --- Storage Account parameters ---
+// Names of the two storage accounts to be deployed in each VNet
 param storage1Name string = 'storastudent1hassan786'
 param storage2Name string = 'storastudent2hassan786'
 
-// Deploy VNET 1
+// --- Deploy VNET 1 ---
+// Deploys the first virtual network with infra and storage subnets
 module vnet1Module 'modules/vnet.bicep' = {
   name: 'vnet1Deploy'
   params: {
@@ -35,7 +40,8 @@ module vnet1Module 'modules/vnet.bicep' = {
   }
 }
 
-// Deploy VNET 2
+// --- Deploy VNET 2 ---
+// Deploys the second virtual network with infra and storage subnets
 module vnet2Module 'modules/vnet.bicep' = {
   name: 'vnet2Deploy'
   params: {
@@ -47,7 +53,8 @@ module vnet2Module 'modules/vnet.bicep' = {
   }
 }
 
-// Peer the VNETs (uses existing VNets in the module, so we only pass names)
+// --- Peer the VNETs ---
+// Establishes bidirectional peering between the two VNets
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
   dependsOn: [
@@ -60,7 +67,8 @@ module peerModule 'modules/peerVnets.bicep' = {
   }
 }
 
-// Deploy VM in each VNET
+// --- Deploy Virtual Machines ---
+// Deploys a VM in the infra subnet of VNET 1
 module vm1Module 'modules/vm.bicep' = {
   name: 'vm1Deploy'
   params: {
@@ -72,6 +80,7 @@ module vm1Module 'modules/vm.bicep' = {
   }
 }
 
+// Deploys a VM in the infra subnet of VNET 2
 module vm2Module 'modules/vm.bicep' = {
   name: 'vm2Deploy'
   params: {
@@ -83,7 +92,8 @@ module vm2Module 'modules/vm.bicep' = {
   }
 }
 
-// Deploy Storage Accounts in each VNET
+// --- Deploy Storage Accounts ---
+// Deploys a storage account in the storage subnet of VNET 1
 module storage1Module 'modules/storage.bicep' = {
   name: 'storage1Deploy'
   params: {
@@ -94,6 +104,7 @@ module storage1Module 'modules/storage.bicep' = {
   }
 }
 
+// Deploys a storage account in the storage subnet of VNET 2
 module storage2Module 'modules/storage.bicep' = {
   name: 'storage2Deploy'
   params: {
@@ -104,5 +115,5 @@ module storage2Module 'modules/storage.bicep' = {
   }
 }
 
-// (Optionally) Deploy a Log Analytics Workspace then attach diagnostic settings
-// Call the monitor module for each resource as shown in the earlier examples.
+// (Optionally) Deploy a Log Analytics Workspace and attach diagnostic settings to resources
+// Use the monitor module for this purpose (not shown in this file)

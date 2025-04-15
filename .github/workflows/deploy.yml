@@ -3,7 +3,7 @@ name: Deploy Bicep Template to Azure
 on:
   push:
     branches:
-      - main  # or your preferred  branch
+      - main  # Trigger deployment when code is pushed to the main branch
 
 permissions:
   id-token: write
@@ -15,19 +15,19 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v3  # Gets the source code
 
     - name: Login to Azure
-      uses: azure/login@v1
+      uses: azure/login@v1       # Authenticates to Azure
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy Bicep Template
-      uses: azure/arm-deploy@v1
+      uses: azure/arm-deploy@v1  # Uses Azure Resource Manager to deploy Bicep
       with:
-        scope: resourcegroup           # valid value in lowercase
+        scope: resourcegroup
         subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-        resourceGroupName: 'myResourceGroup'  # replace with your resource group
+        resourceGroupName: 'myResourceGroup'  # Replace with actual resource group
         region: eastus
         template: ./main.bicep
         parameters: |
