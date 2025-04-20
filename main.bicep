@@ -149,7 +149,7 @@ resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'NetworkSecurityGroupEvent'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -183,7 +183,7 @@ resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'NetworkSecurityGroupEvent'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -217,7 +217,7 @@ resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'GuestUsage'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -251,7 +251,7 @@ resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'GuestUsage'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -285,7 +285,7 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'StorageRead'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -319,7 +319,7 @@ resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'StorageRead'  // Changed from 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
