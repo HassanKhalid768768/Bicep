@@ -133,77 +133,125 @@ module laModule 'modules/logAnalyticsWorkspace.bicep' = {
 }
 
 // --------------------------------------------------
-// 6b) Bring each deployed resource into scope and attach diagnostics
+// 6b) Bring each resource into scope and attach Diagnostics
 // --------------------------------------------------
 
-// VNet #1
+// VNET 1 existing reference
 resource vnet1Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  id: vnet1Module.outputs.vnetId
+  name: vnet1Name
 }
-module monitorVnet1 'modules/monitor.bicep' = {
-  name: 'diagVnet1'
+
+// Diagnostic Settings on VNET 1
+resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vnet1Name)}'
   scope: vnet1Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
 
-// VNet #2
+// VNET 2 existing reference
 resource vnet2Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  id: vnet2Module.outputs.vnetId
+  name: vnet2Name
 }
-module monitorVnet2 'modules/monitor.bicep' = {
-  name: 'diagVnet2'
+
+// Diagnostic Settings on VNET 2
+resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vnet2Name)}'
   scope: vnet2Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
 
-// VM #1
+// VM1 existing reference
 resource vm1Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
-  id: vm1Module.outputs.vmId
+  name: vm1Name
 }
-module monitorVm1 'modules/monitor.bicep' = {
-  name: 'diagVm1'
+
+// Diagnostic Settings on VM1
+resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vm1Name)}'
   scope: vm1Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
 
-// VM #2
+// VM2 existing reference
 resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
-  id: vm2Module.outputs.vmId
+  name: vm2Name
 }
-module monitorVm2 'modules/monitor.bicep' = {
-  name: 'diagVm2'
+
+// Diagnostic Settings on VM2
+resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vm2Name)}'
   scope: vm2Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
 
-// Storage #1
+// Storage1 existing reference
 resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
-  id: storage1Module.outputs.storageAccountId
+  name: storage1Name
 }
-module monitorStorage1 'modules/monitor.bicep' = {
-  name: 'diagStorage1'
+
+// Diagnostic Settings on Storage1
+resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(storage1Name)}'
   scope: storage1Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
 
-// Storage #2
+// Storage2 existing reference
 resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
-  id: storage2Module.outputs.storageAccountId
+  name: storage2Name
 }
-module monitorStorage2 'modules/monitor.bicep' = {
-  name: 'diagStorage2'
+
+// Diagnostic Settings on Storage2
+resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(storage2Name)}'
   scope: storage2Res
-  params: {
-    logAnalyticsWorkspaceId: laModule.outputs.workspaceId
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    logs: [
+      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
+    metrics: [
+      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+    ]
   }
 }
