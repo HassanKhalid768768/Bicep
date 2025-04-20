@@ -3,7 +3,7 @@ name: Deploy Bicep Template to Azure
 on:
   push:
     branches:
-      - main  # Trigger deployment when code is pushed to the main branch
+      - main
 
 permissions:
   id-token: write
@@ -27,7 +27,7 @@ jobs:
         with:
           scope: resourcegroup
           subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          resourceGroupName: 'myResourceGroup'  # Replace with your actual resource group name
+          resourceGroupName: 'myResourceGroup'
           region: eastus
           template: ./main.bicep
           parameters: |
