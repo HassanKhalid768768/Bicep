@@ -136,122 +136,206 @@ module laModule 'modules/logAnalyticsWorkspace.bicep' = {
 // 6b) Bring each resource into scope and attach Diagnostics
 // --------------------------------------------------
 
-// VNET 1 existing reference
+// VNET #1 (existing)
 resource vnet1Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   name: vnet1Name
 }
 
-// Diagnostic Settings on VNET 1
+// Diagnostic Settings on VNET #1
 resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vnet1Name)}'
   scope: vnet1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
 
-// VNET 2 existing reference
+// VNET #2 (existing)
 resource vnet2Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   name: vnet2Name
 }
 
-// Diagnostic Settings on VNET 2
+// Diagnostic Settings on VNET #2
 resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vnet2Name)}'
   scope: vnet2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
 
-// VM1 existing reference
+// VM #1 (existing)
 resource vm1Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm1Name
 }
 
-// Diagnostic Settings on VM1
+// Diagnostic Settings on VM #1
 resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vm1Name)}'
   scope: vm1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
 
-// VM2 existing reference
+// VM #2 (existing)
 resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm2Name
 }
 
-// Diagnostic Settings on VM2
+// Diagnostic Settings on VM #2
 resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vm2Name)}'
   scope: vm2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
 
-// Storage1 existing reference
+// Storage #1 (existing)
 resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage1Name
 }
 
-// Diagnostic Settings on Storage1
+// Diagnostic Settings on Storage #1
 resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage1Name)}'
   scope: storage1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
 
-// Storage2 existing reference
+// Storage #2 (existing)
 resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage2Name
 }
 
-// Diagnostic Settings on Storage2
+// Diagnostic Settings on Storage #2
 resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage2Name)}'
   scope: storage2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
     logs: [
-      { category: 'AuditLogs';   enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AuditLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
     metrics: [
-      { category: 'AllMetrics';  enabled: true; retentionPolicy: { enabled: false; days: 0 } }
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
     ]
   }
 }
