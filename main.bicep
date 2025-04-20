@@ -1,89 +1,62 @@
 @description('The Azure region to deploy into')
 param location string = resourceGroup().location
 
-//
-// VNET #1 parameters
-//
-param vnet1Name           string = 'vnet-student-1'
-param vnet1AddressPrefix  string = '10.0.0.0/16'
-param vnet1InfraPrefix    string = '10.0.1.0/24'
-param vnet1StoragePrefix  string = '10.0.2.0/24'
+param vnet1Name string = 'vnet-student-1'
+param vnet1AddressPrefix string = '10.0.0.0/16'
+param vnet1InfraPrefix string = '10.0.1.0/24'
+param vnet1StoragePrefix string = '10.0.2.0/24'
 
-//
-// VNET #2 parameters
-//
-param vnet2Name           string = 'vnet-student-2'
-param vnet2AddressPrefix  string = '10.1.0.0/16'
-param vnet2InfraPrefix    string = '10.1.1.0/24'
-param vnet2StoragePrefix  string = '10.1.2.0/24'
+param vnet2Name string = 'vnet-student-2'
+param vnet2AddressPrefix string = '10.1.0.0/16'
+param vnet2InfraPrefix string = '10.1.1.0/24'
+param vnet2StoragePrefix string = '10.1.2.0/24'
 
-//
-// VM parameters
-//
-param vm1Name       string
-param vm2Name       string
+param vm1Name string
+param vm2Name string
 param adminUsername string = 'azureuser'
 @secure()
 param adminPassword string
 
-//
-// Storage Account parameters
-//
-param storage1Name  string
-param storage2Name  string
+param storage1Name string
+param storage2Name string
 
-// --------------------------------------------------
-// 1) Deploy VNET #1
-// --------------------------------------------------
 module vnet1Module 'modules/vnet.bicep' = {
   name: 'deployVnet1'
   params: {
-    vnetName            : vnet1Name
-    location            : location
-    addressPrefix       : vnet1AddressPrefix
-    infraSubnetPrefix   : vnet1InfraPrefix
-    storageSubnetPrefix : vnet1StoragePrefix
+    vnetName: vnet1Name
+    location: location
+    addressPrefix: vnet1AddressPrefix
+    infraSubnetPrefix: vnet1InfraPrefix
+    storageSubnetPrefix: vnet1StoragePrefix
   }
 }
 
-// --------------------------------------------------
-// 2) Deploy VNET #2
-// --------------------------------------------------
 module vnet2Module 'modules/vnet.bicep' = {
   name: 'deployVnet2'
   params: {
-    vnetName            : vnet2Name
-    location            : location
-    addressPrefix       : vnet2AddressPrefix
-    infraSubnetPrefix   : vnet2InfraPrefix
-    storageSubnetPrefix : vnet2StoragePrefix
+    vnetName: vnet2Name
+    location: location
+    addressPrefix: vnet2AddressPrefix
+    infraSubnetPrefix: vnet2InfraPrefix
+    storageSubnetPrefix: vnet2StoragePrefix
   }
 }
 
-// --------------------------------------------------
-// 3) Peer the two VNETs
-// --------------------------------------------------
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
-  dependsOn: [
-    vnet1Module
-    vnet2Module
-  ]
+  dependsOn: [vnet1Module, vnet2Module]
   params: {
     vnet1Name: vnet1Name
     vnet2Name: vnet2Name
   }
 }
 
-// --------------------------------------------------
-// 4) Deploy one VM per infra subnet
-// --------------------------------------------------
 module vm1Module 'modules/vm.bicep' = {
   name: 'deployVm1'
   params: {
-    vmName       : vm1Name
-    location     : location
-    subnetId     : vnet1Module.outputs.infraSubnetId
+    vmName: vm1Name
+    location: location
+    subnetId: vnet1Module.outputs.infraSubnetId
     adminUsername: adminUsername
     adminPassword: adminPassword
   }
@@ -92,23 +65,20 @@ module vm1Module 'modules/vm.bicep' = {
 module vm2Module 'modules/vm.bicep' = {
   name: 'deployVm2'
   params: {
-    vmName       : vm2Name
-    location     : location
-    subnetId     : vnet2Module.outputs.infraSubnetId
+    vmName: vm2Name
+    location: location
+    subnetId: vnet2Module.outputs.infraSubnetId
     adminUsername: adminUsername
     adminPassword: adminPassword
   }
 }
 
-// --------------------------------------------------
-// 5) Deploy one ZRS Storage account per storage subnet
-// --------------------------------------------------
 module storage1Module 'modules/storage.bicep' = {
   name: 'deployStorage1'
   params: {
     storageAccountName: storage1Name
-    location          : location
-    storageSubnetId   : vnet1Module.outputs.storageSubnetId
+    location: location
+    storageSubnetId: vnet1Module.outputs.storageSubnetId
   }
 }
 
@@ -116,93 +86,19 @@ module storage2Module 'modules/storage.bicep' = {
   name: 'deployStorage2'
   params: {
     storageAccountName: storage2Name
-    location          : location
-    storageSubnetId   : vnet2Module.outputs.storageSubnetId
+    location: location
+    storageSubnetId: vnet2Module.outputs.storageSubnetId
   }
 }
 
-// --------------------------------------------------
-// 6a) Deploy a Log Analytics Workspace
-// --------------------------------------------------
 module laModule 'modules/logAnalyticsWorkspace.bicep' = {
   name: 'deployLogAnalytics'
   params: {
-    name     : 'la-student-workspace'
-    location : location
+    name: 'la-student-workspace'
+    location: location
   }
 }
 
-// --------------------------------------------------
-// 6b) Bring each resource into scope and attach Diagnostics
-// --------------------------------------------------
-
-// VNET #1 (existing)
-resource vnet1Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  name: vnet1Name
-}
-
-resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(vnet1Name)}'
-  scope: vnet1Res
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'NetworkSecurityGroupEvent'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
-
-// VNET #2 (existing)
-resource vnet2Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  name: vnet2Name
-}
-
-resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(vnet2Name)}'
-  scope: vnet2Res
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'NetworkSecurityGroupEvent'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
-
-// VM #1 (existing)
 resource vm1Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm1Name
 }
@@ -212,6 +108,16 @@ resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: vm1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
+    logs: [
+      {
+        category: 'VMPerformanceCounters'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -225,7 +131,6 @@ resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// VM #2 (existing)
 resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm2Name
 }
@@ -235,6 +140,16 @@ resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: vm2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
+    logs: [
+      {
+        category: 'VMPerformanceCounters'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -248,7 +163,6 @@ resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// Storage #1 (existing)
 resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage1Name
 }
@@ -260,7 +174,15 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'StorageRead'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      },
+      {
+        category: 'StorageWrite'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -270,7 +192,7 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     ]
     metrics: [
       {
-        category: 'AllMetrics'
+        category: 'Transaction'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -281,7 +203,6 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
   }
 }
 
-// Storage #2 (existing)
 resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage2Name
 }
@@ -293,7 +214,15 @@ resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'AuditLogs'
+        category: 'StorageRead'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      },
+      {
+        category: 'StorageWrite'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -303,7 +232,7 @@ resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     ]
     metrics: [
       {
-        category: 'AllMetrics'
+        category: 'Transaction'
         enabled: true
         retentionPolicy: {
           enabled: false
