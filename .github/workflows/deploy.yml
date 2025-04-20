@@ -3,7 +3,7 @@ name: Deploy Bicep Template to Azure
 on:
   push:
     branches:
-      - main
+      - main  # Trigger deployment when code is pushed to the main branch
 
 permissions:
   id-token: write
@@ -14,28 +14,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3  # Gets the source code
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Login to Azure
+      uses: azure/login@v1       # Authenticates to Azure
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Install Bicep CLI
-        run: |
-          az bicep install
-          az bicep upgrade
-
-      - name: Deploy Bicep Template with CLI
-        run: |
-          az deployment group create \
-            --subscription ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }} \
-            --resource-group myResourceGroup \
-            --template-file main.bicep \
-            --parameters \
-              vm1Name=vm-student-1 \
-              vm2Name=vm-student-2 \
-              storage1Name=mystorageacct01${{ github.run_number }} \
-              storage2Name=mystorageacct02${{ github.run_number }} \
-              adminPassword='${{ secrets.ADMIN_PASSWORD }}'
+    - name: Deploy Bicep Template
+      uses: azure/arm-deploy@v1  # Uses Azure Resource Manager to deploy Bicep
+      with:
+        scope: resourcegroup
+        subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
+        resourceGroupName: 'myResourceGroup'  # Replace with actual resource group
+        region: eastus
+        template: ./main.bicep
+        parameters: |
+          adminPassword=${{ secrets.ADMIN_PASSWORD }}

@@ -1,187 +1,119 @@
-@description('The location into which all resources should be deployed.')
 param location string = resourceGroup().location
 
-@description('Name of the first virtual network.')
+// --- VNET 1 parameters ---
+// Defines name and subnet address ranges for the first virtual network
 param vnet1Name string = 'vnet-student-1'
+param vnet1AddressPrefix string = '10.0.0.0/16'
+param vnet1InfraPrefix string = '10.0.1.0/24'
+param vnet1StoragePrefix string = '10.0.2.0/24'
 
-@description('Name of the second virtual network.')
+// --- VNET 2 parameters ---
+// Defines name and subnet address ranges for the second virtual network
 param vnet2Name string = 'vnet-student-2'
+param vnet2AddressPrefix string = '10.1.0.0/16'
+param vnet2InfraPrefix string = '10.1.1.0/24'
+param vnet2StoragePrefix string = '10.1.2.0/24'
 
-@description('Name of the subnet in each VNET.')
-param subnetName string = 'default'
-
-@description('Name of the first VM.')
+// --- VM parameters ---
+// Defines the virtual machine names and admin credentials
 param vm1Name string = 'vm-student-1'
-
-@description('Name of the second VM.')
 param vm2Name string = 'vm-student-2'
-
-@description('Admin username for the VMs.')
-param adminUsername string
-
+param adminUsername string = 'azureuser'
 @secure()
-@description('Admin password for the VMs.')
 param adminPassword string
 
-@description('Name of the first storage account.')
-param storage1Name string = 'mystorageacct0126'
+// --- Storage Account parameters ---
+// Names of the two storage accounts to be deployed in each VNet
+param storage1Name string = 'storastudent1hassan786'
+param storage2Name string = 'storastudent2hassan786'
 
-@description('Name of the second storage account.')
-param storage2Name string = 'mystorageacct0226'
-
-/* Deploy VNETs */
-module vnetModule './modules/vnet.bicep' = {
-  name: 'vnetDeployment'
+// --- Deploy VNET 1 ---
+// Deploys the first virtual network with infra and storage subnets
+module vnet1Module 'modules/vnet.bicep' = {
+  name: 'vnet1Deploy'
   params: {
+    vnetName: vnet1Name
     location: location
+    addressPrefix: vnet1AddressPrefix
+    infraSubnetPrefix: vnet1InfraPrefix
+    storageSubnetPrefix: vnet1StoragePrefix
+  }
+}
+
+// --- Deploy VNET 2 ---
+// Deploys the second virtual network with infra and storage subnets
+module vnet2Module 'modules/vnet.bicep' = {
+  name: 'vnet2Deploy'
+  params: {
+    vnetName: vnet2Name
+    location: location
+    addressPrefix: vnet2AddressPrefix
+    infraSubnetPrefix: vnet2InfraPrefix
+    storageSubnetPrefix: vnet2StoragePrefix
+  }
+}
+
+// --- Peer the VNETs ---
+// Establishes bidirectional peering between the two VNets
+module peerModule 'modules/peerVnets.bicep' = {
+  name: 'peerVnets'
+  dependsOn: [
+    vnet1Module
+    vnet2Module
+  ]
+  params: {
     vnet1Name: vnet1Name
     vnet2Name: vnet2Name
-    subnetName: subnetName
   }
 }
 
-/* Deploy Log Analytics */
-module laModule './modules/logAnalytics.bicep' = {
-  name: 'logAnalyticsDeployment'
+// --- Deploy Virtual Machines ---
+// Deploys a VM in the infra subnet of VNET 1
+module vm1Module 'modules/vm.bicep' = {
+  name: 'vm1Deploy'
   params: {
-    location: location
-  }
-}
-
-/* Deploy VMs */
-module vm1Module './modules/vm.bicep' = {
-  name: 'vm1Deployment'
-  params: {
-    location: location
     vmName: vm1Name
-    subnetId: vnetModule.outputs.subnet1Id
+    location: location
+    subnetId: vnet1Module.outputs.infraSubnetId
     adminUsername: adminUsername
     adminPassword: adminPassword
   }
 }
 
-module vm2Module './modules/vm.bicep' = {
-  name: 'vm2Deployment'
+// Deploys a VM in the infra subnet of VNET 2
+module vm2Module 'modules/vm.bicep' = {
+  name: 'vm2Deploy'
   params: {
-    location: location
     vmName: vm2Name
-    subnetId: vnetModule.outputs.subnet2Id
+    location: location
+    subnetId: vnet2Module.outputs.infraSubnetId
     adminUsername: adminUsername
     adminPassword: adminPassword
   }
 }
 
-/* Deploy Storage Accounts */
-module storage1Module './modules/storage.bicep' = {
-  name: 'storage1Deployment'
+// --- Deploy Storage Accounts ---
+// Deploys a storage account in the storage subnet of VNET 1
+module storage1Module 'modules/storage.bicep' = {
+  name: 'storage1Deploy'
   params: {
-    location: location
     storageAccountName: storage1Name
-    storageSubnetId: vnetModule.outputs.subnet1Id
-  }
-}
-
-module storage2Module './modules/storage.bicep' = {
-  name: 'storage2Deployment'
-  params: {
     location: location
+    storageAccountSku: 'Standard_ZRS'
+    storageSubnetId: vnet1Module.outputs.storageSubnetId
+  }
+}
+
+// Deploys a storage account in the storage subnet of VNET 2
+module storage2Module 'modules/storage.bicep' = {
+  name: 'storage2Deploy'
+  params: {
     storageAccountName: storage2Name
-    storageSubnetId: vnetModule.outputs.subnet2Id
+    location: location
+    storageAccountSku: 'Standard_ZRS'
+    storageSubnetId: vnet2Module.outputs.storageSubnetId
   }
 }
 
-/* Diagnostic Setting for VM1 */
-resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(vm1Name)}'
-  scope: vm1Module.outputs.vmId
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    metrics: [
-      {
-        category: 'PerformanceCounters'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    logs: [
-      {
-        category: 'Administrative'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
-
-/* Diagnostic Setting for VM2 */
-resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(vm2Name)}'
-  scope: vm2Module.outputs.vmId
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    metrics: [
-      {
-        category: 'PerformanceCounters'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    logs: [
-      {
-        category: 'Administrative'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
-
-/* Diagnostic Setting for Storage1 */
-resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(storage1Name)}'
-  scope: resource(storage1Module.outputs.storageAccountId, '2021-08-01')
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    metrics: [
-      {
-        category: 'Transaction'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
-
-/* Diagnostic Setting for Storage2 */
-resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'diag-${uniqueString(storage2Name)}'
-  scope: resource(storage2Module.outputs.storageAccountId, '2021-08-01')
-  properties: {
-    workspaceId: laModule.outputs.workspaceId
-    metrics: [
-      {
-        category: 'Transaction'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-  }
-}
+// (Optionally) Deploy a Log Analytics Workspace and attach diagnostic settings to resources
+// Use the monitor module for this purpose (not shown in this file)
