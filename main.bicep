@@ -99,8 +99,64 @@ module laModule 'modules/logAnalyticsWorkspace.bicep' = {
   }
 }
 
+resource vnet1Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
+  name: vnet1Name
+}
+
+resource vnet2Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
+  name: vnet2Name
+}
+
 resource vm1Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm1Name
+}
+
+resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
+  name: vm2Name
+}
+
+resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+  name: storage1Name
+}
+
+resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+  name: storage2Name
+}
+
+resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vnet1Name)}'
+  scope: vnet1Res
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+    ]
+  }
+}
+
+resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diag-${uniqueString(vnet2Name)}'
+  scope: vnet2Res
+  properties: {
+    workspaceId: laModule.outputs.workspaceId
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+    ]
+  }
 }
 
 resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -108,16 +164,6 @@ resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: vm1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'VMPerformanceCounters'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -129,10 +175,6 @@ resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
       }
     ]
   }
-}
-
-resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
-  name: vm2Name
 }
 
 resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -140,16 +182,6 @@ resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: vm2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'VMPerformanceCounters'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -163,33 +195,11 @@ resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
-  name: storage1Name
-}
-
 resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage1Name)}'
   scope: storage1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'StorageRead'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      },
-      {
-        category: 'StorageWrite'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'Transaction'
@@ -203,33 +213,11 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
   }
 }
 
-resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
-  name: storage2Name
-}
-
 resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage2Name)}'
   scope: storage2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'StorageRead'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      },
-      {
-        category: 'StorageWrite'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'Transaction'
