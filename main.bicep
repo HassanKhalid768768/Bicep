@@ -141,7 +141,6 @@ resource vnet1Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   name: vnet1Name
 }
 
-// Diagnostic Settings on VNET #1
 resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vnet1Name)}'
   scope: vnet1Res
@@ -149,7 +148,7 @@ resource diagVnet1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'NetworkSecurityGroupEvent'  // Changed from 'AuditLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -175,7 +174,6 @@ resource vnet2Res 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   name: vnet2Name
 }
 
-// Diagnostic Settings on VNET #2
 resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vnet2Name)}'
   scope: vnet2Res
@@ -183,7 +181,7 @@ resource diagVnet2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'NetworkSecurityGroupEvent'  // Changed from 'AuditLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -209,22 +207,11 @@ resource vm1Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm1Name
 }
 
-// Diagnostic Settings on VM #1
 resource diagVm1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vm1Name)}'
   scope: vm1Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'GuestUsage'  // Changed from 'AuditLogs'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -243,22 +230,11 @@ resource vm2Res 'Microsoft.Compute/virtualMachines@2021-07-01' existing = {
   name: vm2Name
 }
 
-// Diagnostic Settings on VM #2
 resource diagVm2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(vm2Name)}'
   scope: vm2Res
   properties: {
     workspaceId: laModule.outputs.workspaceId
-    logs: [
-      {
-        category: 'GuestUsage'  // Changed from 'AuditLogs'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
     metrics: [
       {
         category: 'AllMetrics'
@@ -277,7 +253,6 @@ resource storage1Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage1Name
 }
 
-// Diagnostic Settings on Storage #1
 resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage1Name)}'
   scope: storage1Res
@@ -285,7 +260,7 @@ resource diagStorage1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'StorageRead'  // Changed from 'AuditLogs'
+        category: 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -311,7 +286,6 @@ resource storage2Res 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storage2Name
 }
 
-// Diagnostic Settings on Storage #2
 resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'diag-${uniqueString(storage2Name)}'
   scope: storage2Res
@@ -319,7 +293,7 @@ resource diagStorage2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     workspaceId: laModule.outputs.workspaceId
     logs: [
       {
-        category: 'StorageRead'  // Changed from 'AuditLogs'
+        category: 'AuditLogs'
         enabled: true
         retentionPolicy: {
           enabled: false
