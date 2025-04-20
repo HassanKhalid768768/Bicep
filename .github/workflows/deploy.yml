@@ -27,12 +27,12 @@ jobs:
         with:
           scope: resourcegroup
           subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          resourceGroupName: 'myResourceGroup'    # ← your target RG
-          location: eastus                        # ← **was** `region:` before
+          resourceGroupName: 'myResourceGroup'
+          region: eastus
           template: ./main.bicep
-          parameters: |
-            vm1Name=vm-student-1
-            vm2Name=vm-student-2
+          parameters: >
+            ./main.bicepparam
+            adminPassword=${{ secrets.ADMIN_PASSWORD }}
             storage1Name=mystorageacct01${{ github.run_number }}
             storage2Name=mystorageacct02${{ github.run_number }}
-            adminPassword=${{ secrets.ADMIN_PASSWORD }}
+            vm2Name=vm-student-2
