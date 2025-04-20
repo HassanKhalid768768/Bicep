@@ -22,7 +22,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
           action: 'Allow'
         }
       ]
-      defaultAction: 'Deny'  // Blocks access from outside the subnet
+      defaultAction: 'Deny'
     }
   }
 }
