@@ -1,31 +1,69 @@
-@description('Location for all resources')
+@description('The Azure region to deploy into')
 param location string = resourceGroup().location
 
-@description('Prefix for resource names')
-param prefix string = 'student'
+//
+// VNET #1 parameters
+//
+param vnet1Name string           = 'vnet-student-1'
+param vnet1AddressPrefix string = '10.0.0.0/16'
+param vnet1InfraPrefix string   = '10.0.1.0/24'
+param vnet1StoragePrefix string = '10.0.2.0/24'
 
-var vnet1Name = '${prefix}-vnet1'
-var vnet2Name = '${prefix}-vnet2'
+//
+// VNET #2 parameters
+//
+param vnet2Name string           = 'vnet-student-2'
+param vnet2AddressPrefix string = '10.1.0.0/16'
+param vnet2InfraPrefix string   = '10.1.1.0/24'
+param vnet2StoragePrefix string = '10.1.2.0/24'
 
-// Deploy VNET 1
+//
+// VM parameters
+//
+param vm1Name      string
+param vm2Name      string
+param adminUsername string = 'azureuser'
+@secure()
+param adminPassword string
+
+//
+// Storage Account parameters
+//
+param storage1Name string
+param storage2Name string
+
+// --------------------------------------------------
+// 1) Deploy VNET #1
+// --------------------------------------------------
 module vnet1Module 'modules/vnet.bicep' = {
-  name: 'vnet1'
+  name: 'deployVnet1'
   params: {
-    namePrefix: vnet1Name
-    location: location
+    vnetName             : vnet1Name
+    location             : location
+    addressPrefix        : vnet1AddressPrefix
+    infraSubnetPrefix    : vnet1InfraPrefix
+    storageSubnetPrefix  : vnet1StoragePrefix
   }
 }
 
-// Deploy VNET 2
+// --------------------------------------------------
+// 2) Deploy VNET #2
+// --------------------------------------------------
 module vnet2Module 'modules/vnet.bicep' = {
-  name: 'vnet2'
+  name: 'deployVnet2'
   params: {
-    namePrefix: vnet2Name
-    location: location
+    vnetName             : vnet2Name
+    location             : location
+    addressPrefix        : vnet2AddressPrefix
+    infraSubnetPrefix    : vnet2InfraPrefix
+    storageSubnetPrefix  : vnet2StoragePrefix
   }
 }
 
-// Peer the VNETs
+// --------------------------------------------------
+// 3) Peer the two VNETs
+//    (must wait for both to exist)
+// --------------------------------------------------
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
   dependsOn: [
@@ -33,117 +71,116 @@ module peerModule 'modules/peerVnets.bicep' = {
     vnet2Module
   ]
   params: {
-    vnet1Name: vnet1Module.outputs.vnetName
-    vnet1Id: vnet1Module.outputs.vnetId
-    vnet2Name: vnet2Module.outputs.vnetName
-    vnet2Id: vnet2Module.outputs.vnetId
+    vnet1Name: vnet1Name
+    vnet2Name: vnet2Name
   }
 }
 
-// Deploy VM in VNET 1
+// --------------------------------------------------
+// 4) Deploy one VM in each `infra` subnet
+// --------------------------------------------------
 module vm1Module 'modules/vm.bicep' = {
-  name: 'vm1'
-  dependsOn: [vnet1Module]
+  name: 'deployVm1'
   params: {
-    namePrefix: '${prefix}-vm1'
-    location: location
-    subnetId: vnet1Module.outputs.infraSubnetId
+    vmName       : vm1Name
+    location     : location
+    subnetId     : vnet1Module.outputs.infraSubnetId
+    adminUsername: adminUsername
+    adminPassword: adminPassword
   }
 }
 
-// Deploy VM in VNET 2
 module vm2Module 'modules/vm.bicep' = {
-  name: 'vm2'
-  dependsOn: [vnet2Module]
+  name: 'deployVm2'
   params: {
-    namePrefix: '${prefix}-vm2'
-    location: location
-    subnetId: vnet2Module.outputs.infraSubnetId
+    vmName       : vm2Name
+    location     : location
+    subnetId     : vnet2Module.outputs.infraSubnetId
+    adminUsername: adminUsername
+    adminPassword: adminPassword
   }
 }
 
-// Deploy ZRS Storage Account in VNET 1
+// --------------------------------------------------
+// 5) Deploy one ZRS Storage account in each `storage` subnet
+// --------------------------------------------------
 module storage1Module 'modules/storage.bicep' = {
-  name: 'storage1'
-  dependsOn: [vnet1Module]
+  name: 'deployStorage1'
   params: {
-    namePrefix: '${prefix}stg1'
-    location: location
-    subnetId: vnet1Module.outputs.storageSubnetId
+    storageAccountName: storage1Name
+    location          : location
+    storageSubnetId   : vnet1Module.outputs.storageSubnetId
   }
 }
 
-// Deploy ZRS Storage Account in VNET 2
 module storage2Module 'modules/storage.bicep' = {
-  name: 'storage2'
-  dependsOn: [vnet2Module]
+  name: 'deployStorage2'
   params: {
-    namePrefix: '${prefix}stg2'
-    location: location
-    subnetId: vnet2Module.outputs.storageSubnetId
+    storageAccountName: storage2Name
+    location          : location
+    storageSubnetId   : vnet2Module.outputs.storageSubnetId
   }
 }
 
-// Deploy Log Analytics Workspace
+// --------------------------------------------------
+// 6a) Deploy an Azure Monitor Log Analytics Workspace
+// --------------------------------------------------
 module laModule 'modules/logAnalyticsWorkspace.bicep' = {
-  name: 'logAnalytics'
+  name: 'deployLogAnalytics'
   params: {
-    name: '${prefix}-la'
-    location: location
+    name     : 'la-student-workspace'
+    location : location
   }
 }
 
-// Monitor all resources with diagnostics
+// --------------------------------------------------
+// 6b) Attach Diagnostic Settings to *every* resource
+//     (no explicit dependsOn needed — references imply ordering)
+// --------------------------------------------------
 module monitorVnet1 'modules/monitor.bicep' = {
-  name: 'monitorVnet1'
-  dependsOn: [vnet1Module, laModule]
+  name: 'diagVnet1'
   params: {
-    resourceId: vnet1Module.outputs.vnetId
+    resourceId             : vnet1Module.outputs.vnetId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
 
 module monitorVnet2 'modules/monitor.bicep' = {
-  name: 'monitorVnet2'
-  dependsOn: [vnet2Module, laModule]
+  name: 'diagVnet2'
   params: {
-    resourceId: vnet2Module.outputs.vnetId
+    resourceId             : vnet2Module.outputs.vnetId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
 
-module monitorVM1 'modules/monitor.bicep' = {
-  name: 'monitorVM1'
-  dependsOn: [vm1Module, laModule]
+module monitorVm1 'modules/monitor.bicep' = {
+  name: 'diagVm1'
   params: {
-    resourceId: vm1Module.outputs.vmId
+    resourceId             : vm1Module.outputs.vmId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
 
-module monitorVM2 'modules/monitor.bicep' = {
-  name: 'monitorVM2'
-  dependsOn: [vm2Module, laModule]
+module monitorVm2 'modules/monitor.bicep' = {
+  name: 'diagVm2'
   params: {
-    resourceId: vm2Module.outputs.vmId
+    resourceId             : vm2Module.outputs.vmId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
 
 module monitorStorage1 'modules/monitor.bicep' = {
-  name: 'monitorStorage1'
-  dependsOn: [storage1Module, laModule]
+  name: 'diagStorage1'
   params: {
-    resourceId: storage1Module.outputs.storageAccountId
+    resourceId             : storage1Module.outputs.storageAccountId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
 
 module monitorStorage2 'modules/monitor.bicep' = {
-  name: 'monitorStorage2'
-  dependsOn: [storage2Module, laModule]
+  name: 'diagStorage2'
   params: {
-    resourceId: storage2Module.outputs.storageAccountId
+    resourceId             : storage2Module.outputs.storageAccountId
     logAnalyticsWorkspaceId: laModule.outputs.workspaceId
   }
 }
