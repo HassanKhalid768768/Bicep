@@ -27,7 +27,7 @@ jobs:
       with:
         scope: resourcegroup
         subscriptionId: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
-        resourceGroupName: 'myResourceGroup'  # Replace with actual resource group
+        resourceGroupName: 'myResourceGroup'  # Replace with actual resource group name of your choice
         region: eastus
         template: ./main.bicep
         parameters: |
