@@ -1,5 +1,3 @@
-// Creates a network interface and a Windows virtual machine connected to a specified subnet
-
 param vmName string
 param location string = resourceGroup().location
 param subnetId string
@@ -30,7 +28,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   location: location
   properties: {
     hardwareProfile: {
-      vmSize: 'Standard_B1s'  // Low-cost instance type for student/lab use
+      vmSize: 'Standard_B1s'
     }
     osProfile: {
       computerName: vmName

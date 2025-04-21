@@ -1,5 +1,3 @@
-// Creates a storage account restricted to a specific subnet (via network ACLs)
-
 param storageAccountName string
 param location string = resourceGroup().location
 param storageAccountKind string = 'StorageV2'
@@ -22,7 +20,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
           action: 'Allow'
         }
       ]
-      defaultAction: 'Deny'  // Blocks access from outside the subnet
+      defaultAction: 'Deny'
     }
   }
 }
