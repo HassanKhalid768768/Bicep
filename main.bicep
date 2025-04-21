@@ -31,7 +31,7 @@ module logAnalytics 'modules/logAnalytics.bicep' = {
   name: 'deployLaw'
   params: {
     workspaceName: 'law-student-workspace'
-    location:      location
+    location     : location
   }
 }
 
@@ -39,11 +39,11 @@ module logAnalytics 'modules/logAnalytics.bicep' = {
 module vnet1Module 'modules/vnet.bicep' = {
   name: 'vnet1Deploy'
   params: {
-    vnetName             : vnet1Name
-    location             : location
-    addressPrefix        : vnet1AddressPrefix
-    infraSubnetPrefix    : vnet1InfraPrefix
-    storageSubnetPrefix  : vnet1StoragePrefix
+    vnetName            : vnet1Name
+    location            : location
+    addressPrefix       : vnet1AddressPrefix
+    infraSubnetPrefix   : vnet1InfraPrefix
+    storageSubnetPrefix : vnet1StoragePrefix
   }
 }
 
@@ -51,24 +51,22 @@ module vnet1Module 'modules/vnet.bicep' = {
 module monitorVnet1 'modules/monitor.bicep' = {
   name: 'monitorVnet1'
   params: {
-    resourceId              : vnet1Module.outputs.vnetId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Network/virtualNetworks'
+    resourceApiVersion     : '2021-02-01'
+    resourceName           : vnet1Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    vnet1Module
-    logAnalytics
-  ]
 }
 
 // --- Deploy VNET 2 ---
 module vnet2Module 'modules/vnet.bicep' = {
   name: 'vnet2Deploy'
   params: {
-    vnetName             : vnet2Name
-    location             : location
-    addressPrefix        : vnet2AddressPrefix
-    infraSubnetPrefix    : vnet2InfraPrefix
-    storageSubnetPrefix  : vnet2StoragePrefix
+    vnetName            : vnet2Name
+    location            : location
+    addressPrefix       : vnet2AddressPrefix
+    infraSubnetPrefix   : vnet2InfraPrefix
+    storageSubnetPrefix : vnet2StoragePrefix
   }
 }
 
@@ -76,26 +74,24 @@ module vnet2Module 'modules/vnet.bicep' = {
 module monitorVnet2 'modules/monitor.bicep' = {
   name: 'monitorVnet2'
   params: {
-    resourceId              : vnet2Module.outputs.vnetId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Network/virtualNetworks'
+    resourceApiVersion     : '2021-02-01'
+    resourceName           : vnet2Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    vnet2Module
-    logAnalytics
-  ]
 }
 
 // --- Peer the VNETs ---
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
+  params: {
+    vnet1Name: vnet1Name
+    vnet2Name: vnet2Name
+  }
   dependsOn: [
     vnet1Module
     vnet2Module
   ]
-  params: {
-    vnet1Name : vnet1Name
-    vnet2Name : vnet2Name
-  }
 }
 
 // --- Deploy VM in VNET 1 infra subnet ---
@@ -110,17 +106,15 @@ module vm1Module 'modules/vm.bicep' = {
   }
 }
 
-// Attach diagnostics to VM1
+// Attach diagnostics to VM 1
 module monitorVm1 'modules/monitor.bicep' = {
   name: 'monitorVm1'
   params: {
-    resourceId              : vm1Module.outputs.vmId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Compute/virtualMachines'
+    resourceApiVersion     : '2021-07-01'
+    resourceName           : vm1Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    vm1Module
-    logAnalytics
-  ]
 }
 
 // --- Deploy VM in VNET 2 infra subnet ---
@@ -135,17 +129,15 @@ module vm2Module 'modules/vm.bicep' = {
   }
 }
 
-// Attach diagnostics to VM2
+// Attach diagnostics to VM 2
 module monitorVm2 'modules/monitor.bicep' = {
   name: 'monitorVm2'
   params: {
-    resourceId              : vm2Module.outputs.vmId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Compute/virtualMachines'
+    resourceApiVersion     : '2021-07-01'
+    resourceName           : vm2Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    vm2Module
-    logAnalytics
-  ]
 }
 
 // --- Deploy Storage Account in VNET 1 storage subnet ---
@@ -158,17 +150,15 @@ module storage1Module 'modules/storage.bicep' = {
   }
 }
 
-// Attach diagnostics to Storage1
+// Attach diagnostics to Storage Account 1
 module monitorStorage1 'modules/monitor.bicep' = {
   name: 'monitorStorage1'
   params: {
-    resourceId              : storage1Module.outputs.storageAccountId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Storage/storageAccounts'
+    resourceApiVersion     : '2021-08-01'
+    resourceName           : storage1Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    storage1Module
-    logAnalytics
-  ]
 }
 
 // --- Deploy Storage Account in VNET 2 storage subnet ---
@@ -181,15 +171,13 @@ module storage2Module 'modules/storage.bicep' = {
   }
 }
 
-// Attach diagnostics to Storage2
+// Attach diagnostics to Storage Account 2
 module monitorStorage2 'modules/monitor.bicep' = {
   name: 'monitorStorage2'
   params: {
-    resourceId              : storage2Module.outputs.storageAccountId
-    logAnalyticsWorkspaceId : logAnalytics.outputs.workspaceId
+    resourceType           : 'Microsoft.Storage/storageAccounts'
+    resourceApiVersion     : '2021-08-01'
+    resourceName           : storage2Name
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
   }
-  dependsOn: [
-    storage2Module
-    logAnalytics
-  ]
 }
