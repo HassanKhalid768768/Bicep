@@ -122,6 +122,10 @@ module monitorVnet1 'modules/monitor.bicep' = {
     resourceId: vnet1Module.outputs.vnetId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    vnet1Module
+    workspace
+  ]
 }
 
 module monitorVnet2 'modules/monitor.bicep' = {
@@ -130,6 +134,10 @@ module monitorVnet2 'modules/monitor.bicep' = {
     resourceId: vnet2Module.outputs.vnetId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    vnet2Module
+    workspace
+  ]
 }
 
 module monitorVm1 'modules/monitor.bicep' = {
@@ -138,6 +146,10 @@ module monitorVm1 'modules/monitor.bicep' = {
     resourceId: vm1Module.outputs.vmId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    vm1Module
+    workspace
+  ]
 }
 
 module monitorVm2 'modules/monitor.bicep' = {
@@ -146,6 +158,10 @@ module monitorVm2 'modules/monitor.bicep' = {
     resourceId: vm2Module.outputs.vmId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    vm2Module
+    workspace
+  ]
 }
 
 module monitorStorage1 'modules/monitor.bicep' = {
@@ -154,6 +170,10 @@ module monitorStorage1 'modules/monitor.bicep' = {
     resourceId: storage1Module.outputs.storageAccountId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    storage1Module
+    workspace
+  ]
 }
 
 module monitorStorage2 'modules/monitor.bicep' = {
@@ -162,4 +182,8 @@ module monitorStorage2 'modules/monitor.bicep' = {
     resourceId: storage2Module.outputs.storageAccountId
     logAnalyticsWorkspaceId: workspace.id
   }
+  dependsOn: [
+    storage2Module
+    workspace
+  ]
 }
