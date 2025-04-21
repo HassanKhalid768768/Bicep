@@ -1,21 +1,21 @@
 param location string = resourceGroup().location
 
-// --- Log Analytics Workspace ---
-param workspaceName string = 'la-${uniqueString(resourceGroup().id)}'
-
 // --- VNET 1 parameters ---
+// Defines name and subnet address ranges for the first virtual network
 param vnet1Name string = 'vnet-student-1'
 param vnet1AddressPrefix string = '10.0.0.0/16'
 param vnet1InfraPrefix string = '10.0.1.0/24'
 param vnet1StoragePrefix string = '10.0.2.0/24'
 
 // --- VNET 2 parameters ---
+// Defines name and subnet address ranges for the second virtual network
 param vnet2Name string = 'vnet-student-2'
 param vnet2AddressPrefix string = '10.1.0.0/16'
 param vnet2InfraPrefix string = '10.1.1.0/24'
 param vnet2StoragePrefix string = '10.1.2.0/24'
 
 // --- VM parameters ---
+// Defines the virtual machine names and admin credentials
 param vm1Name string = 'vm-student-1'
 param vm2Name string = 'vm-student-2'
 param adminUsername string = 'azureuser'
@@ -23,19 +23,12 @@ param adminUsername string = 'azureuser'
 param adminPassword string
 
 // --- Storage Account parameters ---
-param storage1Name string = 'storastudent1${uniqueString(resourceGroup().id)}'
-param storage2Name string = 'storastudent2${uniqueString(resourceGroup().id)}'
+// Names of the two storage accounts to be deployed in each VNet
+param storage1Name string = 'storastudent1hassan786'
+param storage2Name string = 'storastudent2hassan786'
 
-// ========== RESOURCE DEPLOYMENTS ========== //
-
-// Log Analytics Workspace
-resource workspace 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
-  name: workspaceName
-  location: location
-  properties: {}
-}
-
-// VNETs
+// --- Deploy VNET 1 ---
+// Deploys the first virtual network with infra and storage subnets
 module vnet1Module 'modules/vnet.bicep' = {
   name: 'vnet1Deploy'
   params: {
@@ -47,6 +40,8 @@ module vnet1Module 'modules/vnet.bicep' = {
   }
 }
 
+// --- Deploy VNET 2 ---
+// Deploys the second virtual network with infra and storage subnets
 module vnet2Module 'modules/vnet.bicep' = {
   name: 'vnet2Deploy'
   params: {
@@ -58,7 +53,8 @@ module vnet2Module 'modules/vnet.bicep' = {
   }
 }
 
-// VNET Peering
+// --- Peer the VNETs ---
+// Establishes bidirectional peering between the two VNets
 module peerModule 'modules/peerVnets.bicep' = {
   name: 'peerVnets'
   dependsOn: [
@@ -71,7 +67,8 @@ module peerModule 'modules/peerVnets.bicep' = {
   }
 }
 
-// Virtual Machines
+// --- Deploy Virtual Machines ---
+// Deploys a VM in the infra subnet of VNET 1
 module vm1Module 'modules/vm.bicep' = {
   name: 'vm1Deploy'
   params: {
@@ -83,6 +80,7 @@ module vm1Module 'modules/vm.bicep' = {
   }
 }
 
+// Deploys a VM in the infra subnet of VNET 2
 module vm2Module 'modules/vm.bicep' = {
   name: 'vm2Deploy'
   params: {
@@ -94,7 +92,8 @@ module vm2Module 'modules/vm.bicep' = {
   }
 }
 
-// Storage Accounts
+// --- Deploy Storage Accounts ---
+// Deploys a storage account in the storage subnet of VNET 1
 module storage1Module 'modules/storage.bicep' = {
   name: 'storage1Deploy'
   params: {
@@ -105,6 +104,7 @@ module storage1Module 'modules/storage.bicep' = {
   }
 }
 
+// Deploys a storage account in the storage subnet of VNET 2
 module storage2Module 'modules/storage.bicep' = {
   name: 'storage2Deploy'
   params: {
@@ -115,75 +115,4 @@ module storage2Module 'modules/storage.bicep' = {
   }
 }
 
-// ========== MONITORING CONFIGURATION ========== //
-module monitorVnet1 'modules/monitor.bicep' = {
-  name: 'monitorVnet1'
-  params: {
-    resourceId: vnet1Module.outputs.vnetId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    vnet1Module
-    workspace
-  ]
-}
-
-module monitorVnet2 'modules/monitor.bicep' = {
-  name: 'monitorVnet2'
-  params: {
-    resourceId: vnet2Module.outputs.vnetId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    vnet2Module
-    workspace
-  ]
-}
-
-module monitorVm1 'modules/monitor.bicep' = {
-  name: 'monitorVm1'
-  params: {
-    resourceId: vm1Module.outputs.vmId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    vm1Module
-    workspace
-  ]
-}
-
-module monitorVm2 'modules/monitor.bicep' = {
-  name: 'monitorVm2'
-  params: {
-    resourceId: vm2Module.outputs.vmId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    vm2Module
-    workspace
-  ]
-}
-
-module monitorStorage1 'modules/monitor.bicep' = {
-  name: 'monitorStorage1'
-  params: {
-    resourceId: storage1Module.outputs.storageAccountId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    storage1Module
-    workspace
-  ]
-}
-
-module monitorStorage2 'modules/monitor.bicep' = {
-  name: 'monitorStorage2'
-  params: {
-    resourceId: storage2Module.outputs.storageAccountId
-    logAnalyticsWorkspaceId: workspace.id
-  }
-  dependsOn: [
-    storage2Module
-    workspace
-  ]
-}
+// (Optionally) Deploy a Log Analytics Workspace and attach diagnostic settings to resources
